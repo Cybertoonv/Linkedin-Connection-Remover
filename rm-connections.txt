@@ -1,0 +1,49 @@
+(async () => {
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  async function removeVisibleConnections() {
+    const buttons = Array.from(document.querySelectorAll('button[aria-label="Show more actions"]'));
+    for (const btn of buttons) {
+      try {
+        btn.click();
+        await delay(500);  // half a second delay
+
+        const removeP = Array.from(document.querySelectorAll('p'))
+          .find(p => p.textContent.includes('Remove connection'));
+        if (!removeP) {
+          document.body.click();
+          continue;
+        }
+        removeP.click();
+        await delay(500);  // half a second delay
+
+        const removeConfirm = Array.from(document.querySelectorAll('span'))
+          .find(span => span.textContent.trim() === 'Remove');
+        if (removeConfirm) {
+          removeConfirm.click();
+          console.log('Removed one connection');
+          await delay(800);  // slightly longer delay to allow UI update
+        } else {
+          document.body.click();
+        }
+      } catch (e) {
+        console.error('Error removing connection:', e);
+      }
+    }
+  }
+
+  while (true) {
+    await removeVisibleConnections();
+
+    const loadMore = Array.from(document.querySelectorAll('span'))
+      .find(span => span.textContent.trim() === 'Load more');
+
+    if (!loadMore) {
+      console.log('No more "Load more" button found. All done!');
+      break;
+    }
+    console.log('Clicking "Load more" to load more connections...');
+    loadMore.click();
+    await delay(1500);  // 1.5 seconds to load more reliably
+  }
+})();
